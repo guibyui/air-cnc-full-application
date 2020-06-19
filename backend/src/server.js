@@ -1,7 +1,13 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const routes = require('./routes');
 
 const app = express();
+
+mongoose.connect('mongodb+srv://aircnc:aircnc@aircnc-nwqli.mongodb.net/aircncdb?retryWrites=true&w=majority', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+});
 
 // GET: Receive information, 
 // POST: Create information, 
