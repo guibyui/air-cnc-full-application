@@ -22,7 +22,7 @@ function SpotList({ tech, navigation }) {
       });
 
       setSpots(response.data);
-      //   console.log(spots);
+        // console.log(spots);
     }
 
     loadSpots();
@@ -48,7 +48,7 @@ function SpotList({ tech, navigation }) {
             <Image
               style={styles.thumbnail}
               source={{ uri: item.thumbnail_url }}
-            ></Image>
+            />
             <Text style={styles.company}>{item.company}</Text>
             <Text style={styles.price}>
               {item.price ? `$${item.price}/day` : "FREE"}
