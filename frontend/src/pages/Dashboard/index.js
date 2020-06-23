@@ -1,29 +1,81 @@
-import React, { useEffect, useState } from "react";
-import { Link } from 'react-router-dom';
-import api from '../../services/api';
+import React, { useEffect, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+import api from "../../services/api";
+import socketio from "socket.io-client";
 
-import './styles.css';
+import "./styles.css";
 
 export default function Dashboard() {
-const [spots, setSpots] = useState([])
+  const [spots, setSpots] = useState([]);
+  const [requests, setRequests] = useState([]);
 
-useEffect(() => {
-  async function loadSpots() {
-    const user_id = localStorage.getItem('user');
-    const response = await api.get('/dashboard', {
-      headers: { user_id }
+  const user_id = localStorage.getItem("user");
+
+  const socket = useMemo(
+    () =>
+      socketio("http://localhost:3333", {
+        query: { user_id },
+      }),
+    [user_id]
+  );
+
+  useEffect(() => {
+    socket.on("booking_request", (data) => {
+      // console.log(data);
+      setRequests([...requests, data]);
     });
+  }, [requests, socket]);
 
-    setSpots(response.data);
-    // console.log(response.data);
-    
+  useEffect(() => {
+    async function loadSpots() {
+      const user_id = localStorage.getItem("user");
+      const response = await api.get("/dashboard", {
+        headers: { user_id },
+      });
+
+      setSpots(response.data);
+      // console.log(response.data);
+    }
+
+    loadSpots();
+  }, []);
+
+  async function handleAccept(id) {
+    await api.post(`/bookings/${id}/approvals`);
+
+    setRequests(requests.filter((request) => request._id !== id));
   }
-  
-  loadSpots();
-}, [])
+
+  async function handleReject(id) {
+    await api.post(`/bookings/${id}/rejections`);
+
+    setRequests(requests.filter((request) => request._id !== id));
+  }
 
   return (
     <>
+      <ul className="notifications">
+        {requests.map((request) => (
+          <li key={request._id}>
+            <p>
+              <strong>{request.user.email}</strong> is requesting a reservation
+              at <strong>{request.spot.company}</strong> at <strong> {request.date} </strong>
+            </p>
+            <button
+              className="accept"
+              onClick={() => handleAccept(request._id)}
+            >
+              ACCEPT
+            </button>
+            <button
+              className="reject"
+              onClick={() => handleReject(request._id)}
+            >
+              REJECT
+            </button>
+          </li>
+        ))}
+      </ul>
       <ul className="spot-list">
         {spots.map((spot) => (
           <li key={spot._id}>
