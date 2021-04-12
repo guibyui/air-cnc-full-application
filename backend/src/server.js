@@ -8,6 +8,7 @@ const http = require("http");
 
 const routes = require("./routes");
 
+// Creating our application
 const app = express();
 const server = http.Server(app);
 const io = socketio(server);
